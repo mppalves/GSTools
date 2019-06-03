@@ -24,6 +24,14 @@ Run_analysis()
 Run_simulation()
 ```
 
+### Instalation
+
+```
+install.packages("devtools")
+library(devtools)
+devtools::install_github("mppalves/GSTools")
+```
+
 ### Author(s)
 
 Marcos Alves [mppalves@gmail.com](mppalves@f=gmail.com)
