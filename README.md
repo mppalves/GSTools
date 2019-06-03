@@ -32,6 +32,6 @@ library(devtools)
 devtools::install_github("mppalves/GSTools")
 ```
 
-### Author(s)
+### Author
 
 Marcos Alves [mppalves@gmail.com](mppalves@f=gmail.com)
