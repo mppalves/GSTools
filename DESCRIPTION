@@ -1,0 +1,22 @@
+Package: GSTools
+Title: Grass Tools
+Version: 0.0.0.1
+Authors@R: 
+    person(given = "Marcos Paulo",
+           family = "Pedrosa Alves",
+           role = c("aut", "cre"),
+           email = "mppalves@gmail.com")
+Description: Group of functions and warpper functions to pre-process and analyse data from LPJml
+License: What license it uses
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
+Imports:
+  ggplot2,
+  stringr,
+  keras,
+  tidyr,
+  plotly,
+  ggmap,
+  tidyverse,
+  viridis
