@@ -59,9 +59,9 @@ save_weights = function(weights,data_set) {
   for (i in 1:length(weights)) {
     l = floor((i + 1) / 2)
     if ((i %% 2) != 0) {
-      write.table(data.frame(weights[[i]]), paste0(data_set,"_weights_", l, ".csv"), col.names = F, row.names = F, sep = ',')
+      write.table(data.frame(weights[[i]]), paste0(data_set,"_weights_", l, ".csv"), col.names = F, row.names = F, sep = ',', quote = F)
     }else{
-      write.table(data.frame(weights[[i]]), paste0(data_set,"_bias_", l, ".csv"), col.names = F, row.names = F, sep = ',')
+      write.table(data.frame(weights[[i]]), paste0(data_set,"_bias_", l, ".csv"), col.names = F, row.names = F, sep = ',', quote = F)
     }
   }
 }
@@ -147,4 +147,3 @@ give_names = function(x) {
 #   }
 #   return(k)
 # }
-
