@@ -1,7 +1,7 @@
 Package: GSTools
 Title: Grass Tools
-Version: 0.0.0.1
-Authors@R: 
+Version: 0.0.0.2
+Authors@R:
     person(given = "Marcos Paulo",
            family = "Pedrosa Alves",
            role = c("aut", "cre"),
