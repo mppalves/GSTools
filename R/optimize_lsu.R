@@ -1,4 +1,4 @@
-#' @name Optimize_LSU
+#' @name optimize_lsu
 #' @title Optmize LSUs
 #' @description Optimize LSU for each cell using a neural net model.
 #' @usage Optimize_LSU(test_data, model, min_Lsu, max_Lsu, col_means,
@@ -20,12 +20,11 @@
 #' @examples Optimize_LSU(test_data, ML_model_harvest,min_Lsu = -2, max_Lsu = 2,
 #'                        col_means_train_harvest,col_stddevs_train_harvest,
 #'                        range = 28415:28416)
-#' @export
+#' @export optimize_lsu
+#' @import tidyr
 
-library(tidyr)
-# source("C:/Users/MarcosPaulo/OneDrive/PIK - Intership/PIK-projects/generate_test_data.R")
 
-Optimize_LSU <- function(test_data, model,min_Lsu, max_Lsu,col_means,col_stddevs, range){
+optimize_lsu <- function(test_data, model,min_Lsu, max_Lsu,col_means,col_stddevs, range){
 
   optimization = function(test_data){
 

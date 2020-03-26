@@ -6,7 +6,8 @@
 #' @param harvest_predicted data frame with the predicted harvest value
 #' @author Marcos Alves \email{mpplaves@gmail.com}
 #' @examples reconstruct_dataset(test_data_unscaled, harvest_predicted)
-#' @export
+#' @export reconstruct_dataset
+#' @import tidyr
 
 reconstruct_dataset <- function(test_data_unscaled, harvest_predicted){
   x = data.frame(test_data_unscaled, "gmC2" = harvest_predicted)

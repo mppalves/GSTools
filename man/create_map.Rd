@@ -32,9 +32,11 @@ Wrapper function to automate the process of creating maps and
   save them in jpg.
 }
 \examples{
-create_map(map_change, save_jpg = list(T, width = 80, height = 64), map_name = "climate scenario 1",
-          cathegorical = F, color_range = c("#FF0F47", "#FFFFFF", "#59BF34DB"),
-          limits = c(-75,75))
+create_map(map_change,
+  save_jpg = list(T, width = 80, height = 64), map_name = "climate scenario 1",
+  cathegorical = F, color_range = c("#FF0F47", "#FFFFFF", "#59BF34DB"),
+  limits = c(-75, 75)
+)
 }
 \author{
 Marcos Alves \email{mppalves@gmail.com}

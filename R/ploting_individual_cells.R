@@ -13,9 +13,8 @@
 #'@author Marcos Alves \email{mppalves@gmail.com}
 #'@examples ploting_individual_cells(test_data=test_data, cell = 28415,Lsu_range =c(-1.5,1.5) ,climate_variable = "precipitation_mean",
 #'                                   climate_variable_range = c(-1.5,1.5), ML_model_harvest)
-#'@export
-
-library(plotly)
+#'@export ploting_individual_cells
+#'@importFrom plotly plot_ly
 
 ploting_individual_cells = function(test_data,cell,Lsu_range, climate_variable, climate_variable_range, ML_model){
   #Ploting the model results for one cell

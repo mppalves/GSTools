@@ -12,13 +12,13 @@ machine learning model tests.}
 
 \item{cell}{Cell number from 1 to 67420.}
 
-\item{lsu_range}{Normalized ploting range ex: from -1.5 to 2.5}
-
 \item{climate_variable}{One of the following: "temperature_mean", "precipitation_mean", "radiation_mean"}
 
 \item{climate_variable_range}{Normalized ploting range ex: from -1.5 to 2.5}
 
 \item{ML_model}{Trained machine learning model saved in hd5}
+
+\item{lsu_range}{Normalized ploting range ex: from -1.5 to 2.5}
 }
 \description{
 Function to plot selected cells response to changes in LSU and

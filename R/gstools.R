@@ -7,19 +7,18 @@
 #'
 #' \code{\link{create_map}}
 #'
-#' \code{\link{export_weights_gams}}
+#' \code{\link{export2gams}}
 #'
 #' \code{\link{generate_test_data}}
 #'
-#' \code{\link{Optimize_LSU}}
+#' \code{\link{optimize_lsu}}
 #'
 #' \code{\link{ploting_individual_cells}}
 #'
 #' \code{\link{reconstruct_dataset}}
 #'
-#' \code{\link{Run_analysis}}
+#' \code{\link{run_analysis}}
 #'
-#' \code{\link{Run_simulation}}
 #'
 #' @docType package
 #'
