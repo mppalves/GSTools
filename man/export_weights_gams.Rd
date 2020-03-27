@@ -3,7 +3,7 @@
 \name{export_weights_gams}
 \alias{export_weights_gams}
 \alias{list_col_names}
-\title{Export neural nets weights and biases to .csv}
+\title{Export neural nets weights and biases to .csv and write gams code}
 \usage{
 export_weights_gams(model, inputs_vec, type)
 }

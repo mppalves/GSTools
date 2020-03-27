@@ -1,5 +1,5 @@
 #' @name export_weights_gams
-#' @title Export neural nets weights and biases to .csv
+#' @title Export neural nets weights and biases to .csv and write gams code
 #' @description Save and export model weights and biases for use in GAMS
 #'   reconstruction of neural networks.
 #' @usage export_weights_gams(model, inputs_vec, type)
@@ -47,7 +47,7 @@ update_weights <- function(inputs_vec, weights, names_list) {
       weights[[i]] <- rbind(append("dummy", names_list[[i]]), weights[[i]])
     } else {
       weights[[i]] <- cbind(names_list[[(i - 1)]], weights[[i]])
-      weights[[i]] <- rbind(append("dummy", names_list[[i]]), weights[[i]])
+      #weights[[i]] <- rbind(append("dummy", names_list[[i]]), weights[[i]])
     }
   }
   return(weights)
@@ -92,10 +92,10 @@ write_sets <- function(weights_names, inputs_vec, type) {
   for (i in 1:length(weights_names)) {
     y <- append(y, paste0("ln", type, i))
   }
-
-  x <- paste0(y[1], " Neural net input features / ", capture.output(cat(inputs_vec, "LSU", sep = ", ")), " /")
+  write("sets", file = printer,)
+  x <- paste0(y[1], " Neural net input features / ", capture.output(cat(inputs_vec, sep = ", ")), " /")
   x <- append(x, paste0(y[2], "(", y[1], ") LSU input type / LSU /"))
-  x <- append(x, paste0(y[3], "(", y[1], ") Weather input types /", capture.output(cat(inputs_vec, sep = ", ")), "/"))
+  x <- gsub("lsu,","", append(x, paste0(y[3], "(", y[1], ") Weather input types /", capture.output(cat(inputs_vec, sep = ", ")), "/")), ignore.case = T)
 
   for (i in 1:length(weights_names)) {
     if (length(weights_names[[i]]) > 1) {
@@ -104,6 +104,7 @@ write_sets <- function(weights_names, inputs_vec, type) {
       x <- append(x, paste0(y[i + 3], " layer ", i, " / ", weights_names[[i]][1], " / "))
     }
   }
+  x <- append(x, ";")
   write(x, file = printer, append = T)
   close(printer)
 
@@ -132,7 +133,7 @@ write_declarations <- function(weights_names, module_number, type, .mean, .std) 
   zx <- NULL
   ax <- NULL
   dzax <- NULL
-  for (i in 1:length(w_names)) {
+  for (i in 1:length(weights_names)) {
     zx <- append(zx, paste0("v", module_number, "_z", i))
     ax <- append(ax, paste0("v", module_number, "_a", i))
     dzax <- append(dzax, c(zx[i], ax[i]))
@@ -164,7 +165,7 @@ write_declarations <- function(weights_names, module_number, type, .mean, .std) 
   zy <- NULL
   ay <- NULL
   dzay <- NULL
-  for (i in 1:length(w_names)) {
+  for (i in 1:length(weights_names)) {
     zy <- append(zy, paste0("q", module_number, "_z", i))
     ay <- append(ay, paste0("q", module_number, "_a", i))
     dzay <- append(dzay, c(zy[i], ay[i]))
@@ -172,9 +173,9 @@ write_declarations <- function(weights_names, module_number, type, .mean, .std) 
   dzay <- append(dy, dzay)
 
   write("equations", file = printer, append = T)
-  y <- paste0(dy[1], "(j)")
+  y <- paste0(dy[1], "(j,ln", type, "1)")
   y <- append(y, paste0(dy[2], "(j,ln", type, "1)"))
-  y <- append(y, paste0(dy[3], "(j,ln", type, "1)"))
+  y <- append(y, paste0(dy[3], "(j)"))
   y <- append(y, paste0(dy[4], "(j)"))
   y <- append(y, paste0(dy[5], "(j)"))
   y <- append(y, paste0(dy[6], "(j)"))
@@ -211,7 +212,7 @@ write_declarations <- function(weights_names, module_number, type, .mean, .std) 
 
 
 
-write_inputs <- function(weights_names, dec, sets, module, type) {
+write_inputs <- function(weights_names, dec, sets, module, type, module_number) {
   printer <- file(paste0(type, "_inputs", ".txt"), "w")
 
   w <- paste0("f", module_number, "nn_input")
@@ -223,29 +224,37 @@ write_inputs <- function(weights_names, dec, sets, module, type) {
   }
 
   d <- paste0("table ", w, "(j,", sets[3], ")
-    $ondelim
-    $include ./modules/", module, "/input/environment_cell.csv
-    $offdelim
-    ;")
+$ondelim
+$include \"./modules/", module, "/input/environment_cell.csv\"
+$offdelim
+;")
 
   write(d, file = printer)
 
+  d <- paste0("table ", y[1], "(", sets[1], ",", sets[4], ")
+$ondelim
+$include \"./modules/", module, "/input/",type,"_weights_", 1, ".csv\"
+$offdelim
+;")
+  write(d, file = printer, append = T)
 
-  for (i in 1:length(weights_names)) {
+
+  for (i in 2:length(weights_names)) {
     d <- paste0("table ", y[i], "(", sets[i + 2], ",", sets[i + 3], ")
-    $ondelim
-    $include ./modules/", module, "/input/",type,"_weights_", i, ".csv
-    $offdelim
-    ;")
+$ondelim
+$include \"./modules/", module, "/input/",type,"_weights_", i, ".csv\"
+$offdelim
+;")
     write(d, file = printer, append = T)
   }
 
   for (i in 1:length(weights_names)) {
     d <- paste0("parameter ", x[i], "(", sets[i + 3], ")
-    $ondelim
-    $include ./modules/", module, "/input/",type,"_bias_", i, ".csv
-    $offdelim
-    ;")
+/
+$ondelim
+$include \"./modules/", module, "/input/",type,"_bias_", i, ".csv\"
+$offdelim
+/;")
     write(d, file = printer, append = T)
   }
   close(printer)
@@ -257,20 +266,20 @@ write_equations <- function(dec, sets, wb, type) {
   x <- paste0(dec[[2]][1], "(j2,", sets[4], ")..  ", dec[[1]][2], "(j2,", sets[4], ") =e= sum(", sets[2], ", ", dec[[1]][1], "(j2) * ", wb[[2]][1], "(", sets[2], ",", sets[4], "));")
   x <- append(x, paste0(dec[[2]][2], "(j2,", sets[4], ")..  ", dec[[1]][3], "(j2,", sets[4], ") =e= sum(", sets[3], ", ", wb[[1]][1], "(j2", ",", sets[3], ") * ", wb[[2]][1], "(", sets[3], ",", sets[4], "));"))
   x <- append(x, paste0(dec[[2]][7], "(j2,", sets[4], ")..  ", dec[[1]][4], "(j2,", sets[4], ") =e= ", dec[[1]][2], "(j2,", sets[4], ")", " + ", dec[[1]][3], "(j2,", sets[4], ")", " + ", wb[[3]][1], "(", sets[4], ")", ";"))
-  x <- append(x, paste0(dec[[2]][8], "(j2,", sets[4], ")..  ", dec[[1]][5], "(j2,", sets[4], ") =e= log(1 + system.exp(", dec[[1]][4], "(j2,", sets[4], ")))"))
+  x <- append(x, paste0(dec[[2]][8], "(j2,", sets[4], ")..  ", dec[[1]][5], "(j2,", sets[4], ") =e= log(1 + system.exp(", dec[[1]][4], "(j2,", sets[4], ")));"))
   j <- 5
   for (i in 6:(length(dec[[1]]) - 2)) {
     if (grepl("[z]", dec[[1]][i])) {
-      x <- append(x, paste0(dec[[2]][i + 3], "(j2,", sets[j], ")..  ", dec[[1]][i], "(j2,", sets[j], ") =e= sum(", sets[j - 1], ", ", dec[[1]][i - 1], "(j2,", sets[j - 1], ")", " * ", wb[[2]][j - 3], "(", sets[j - 1], ",", sets[j], ") + ", wb[[3]][j - 3], "(", sets[j], ");"))
+      x <- append(x, paste0(dec[[2]][i + 3], "(j2,", sets[j], ")..  ", dec[[1]][i], "(j2,", sets[j], ") =e= sum(", sets[j - 1], ", ", dec[[1]][i - 1], "(j2,", sets[j - 1], ")", " * ", wb[[2]][j - 3], "(", sets[j - 1], ",", sets[j], ") + ", wb[[3]][j - 3], "(", sets[j], "));"))
     } else {
-      x <- append(x, paste0(dec[[2]][i + 3], "(j2,", sets[j], ")..  ", dec[[1]][i], "(j2,", sets[j], ") =e= log(1 + system.exp(", dec[[1]][i - 1], "(j2,", sets[j], ")))"))
+      x <- append(x, paste0(dec[[2]][i + 3], "(j2,", sets[j], ")..  ", dec[[1]][i], "(j2,", sets[j], ") =e= log(1 + system.exp(", dec[[1]][i - 1], "(j2,", sets[j], ")));"))
       j <- j + 1
     }
   }
-  x <- append(x, paste0(grep("yld", dec[[2]], value = T), "(j2)..  ", dec[[3]][1], "(j2) =e= sum((", sets[length(sets) - 1], ",", sets[length(sets)], "), ", dec[[1]][length(dec[[1]]) - 2], "(j2,", sets[length(sets) - 1], ")", " * ", wb[[2]][length(wb[[3]])], "(", sets[length(sets) - 1], ",", sets[length(sets)], ") + ", wb[[3]][length(wb[[3]])], "(", sets[length(sets)], ");"))
+  x <- append(x, paste0(grep("yld", dec[[2]], value = T), "(j2)..  ", dec[[3]][1], "(j2) =e= sum((", sets[length(sets) - 1], ",", sets[length(sets)], "), ", dec[[1]][length(dec[[1]]) - 2], "(j2,", sets[length(sets) - 1], ")", " * ", wb[[2]][length(wb[[3]])], "(", sets[length(sets) - 1], ",", sets[length(sets)], ") + ", wb[[3]][length(wb[[3]])], "(", sets[length(sets)], "));"))
   x <- append(x, paste0(grep("max", dec[[2]], value = T), "(j2)..  ", dec[[1]][1], "(j2) =l= 2;"))
   x <- append(x, paste0(grep("min", dec[[2]], value = T), "(j2)..  ", dec[[1]][1], "(j2) =g= -2;"))
-  x <- append(x, paste0(grep("rlsu", dec[[2]], value = T), "(j2)..  ", dec[[3]][2], "(j2) =g= ", dec[[1]][1], " * ", dec[[4]][1], " + ", dec[[4]][2]))
+  x <- append(x, paste0(grep("rlsu", dec[[2]], value = T), "(j2)..  ", dec[[3]][2], "(j2) =g= ", dec[[1]][1],"(j2)", " * ", dec[[4]][1], " + ", dec[[4]][2],";"))
 
   printer <- file(paste0(type, "_equations", ".txt"), "w")
   write(x, file = printer)
@@ -351,6 +360,6 @@ export2gams <- function(model, module, means, stddevs, inputs_vec, type) {
   w_names <- weights_names(weights)
   dec <- write_declarations(w_names, module_number, type, mean, std)
   sets <- write_sets(w_names, inputs_vec, type)
-  wb <- write_inputs(w_names, dec, sets, module, type)
+  wb <- write_inputs(w_names, dec, sets, module, type, module_number)
   write_equations(dec, sets, wb, type)
 }
