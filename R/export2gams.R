@@ -95,7 +95,7 @@ write_sets <- function(weights_names, inputs_vec, type) {
   write("sets", file = printer,)
   x <- paste0(y[1], " Neural net input features / ", capture.output(cat(inputs_vec, sep = ", ")), " /")
   x <- append(x, paste0(y[2], "(", y[1], ") LSU input type / LSU /"))
-  x <- gsub("lsu,","", append(x, paste0(y[3], "(", y[1], ") Weather input types /", capture.output(cat(inputs_vec, sep = ", ")), "/")), ignore.case = T)
+  x <- append(x, gsub("lsu,","", paste0(y[3], "(", y[1], ") Weather input types /", capture.output(cat(inputs_vec, sep = ", ")), "/"),ignore.case = T))
 
   for (i in 1:length(weights_names)) {
     if (length(weights_names[[i]]) > 1) {
@@ -145,7 +145,7 @@ write_declarations <- function(weights_names, module_number, type, .mean, .std) 
   x <- append(x, paste0(dx[2], "(j,ln", type, "1)"))
   x <- append(x, paste0(dx[3], "(j,ln", type, "1)"))
 
-  for (i in 1:length(weights_names)) {
+  for (i in 1:(length(weights_names)-1)) {
     x <- append(x, paste0(zx[i], "(j,ln", type, i, ")"))
     x <- append(x, paste0(ax[i], "(j,ln", type, i, ")"))
   }
@@ -181,7 +181,7 @@ write_declarations <- function(weights_names, module_number, type, .mean, .std) 
   y <- append(y, paste0(dy[6], "(j)"))
 
 
-  for (i in 1:length(weights_names)) {
+  for (i in 1:(length(weights_names)-1)) {
     y <- append(y, paste0(zy[i], "(j,ln", type, i, ")"))
     y <- append(y, paste0(ay[i], "(j,ln", type, i, ")"))
   }

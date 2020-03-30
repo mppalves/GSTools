@@ -79,6 +79,7 @@
 #' @examples
 #' Run_analysis(output_data, input_data, title = "Model Evaluation harvest", cor = "green")
 #' @export run_analysis
+#' @import stringr
 #' @import ggplot2
 
 run_analysis <- function(output_data, input_data, title, cor, comment = NULL) {
