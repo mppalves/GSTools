@@ -53,13 +53,14 @@ update_weights <- function(inputs_vec, weights, names_list) {
   return(weights)
 }
 
-save_weights <- function(weights, type) {
+save_weights <- function(weights, type, model_hash) {
+  hash <- substr(model_hash,1,6)
   for (i in 1:length(weights)) {
     l <- floor((i + 1) / 2)
     if ((i %% 2) != 0) {
-      write.table(data.frame(weights[[i]]), paste0(type, "_weights_", l, ".csv"), col.names = F, row.names = F, sep = ",", quote = F)
+      write.table(data.frame(weights[[i]]), paste0(hash, "_", type, "_weights_", l, ".csv"), col.names = F, row.names = F, sep = ",", quote = F)
     } else {
-      write.table(data.frame(weights[[i]]), paste0(type, "_bias_", l, ".csv"), col.names = F, row.names = F, sep = ",", quote = F)
+      write.table(data.frame(weights[[i]]), paste0(hash, "_", type, "_bias_", l, ".csv"), col.names = F, row.names = F, sep = ",", quote = F)
     }
   }
 }
@@ -197,8 +198,8 @@ write_declarations <- function(weights_names, module_number, type, .mean, .std, 
   w <- append(w, ";")
   write(w, file = printer, append = T)
 
-  ds <- "mean"
-  ds <- append(ds, "std")
+  ds <- paste0("s",module_number,"_mean")
+  ds <- append(ds, paste0("s",module_number,"_std"))
 
   write("scalars", file = printer, append = T)
   s <- paste0(ds[1], " lsu conversion factor /", .mean, "/")
@@ -213,6 +214,7 @@ write_declarations <- function(weights_names, module_number, type, .mean, .std, 
 
 
 write_inputs <- function(weights_names, dec, sets, module, type, module_number, model_hash) {
+  hash <- substr(model_hash,1,6)
   printer <- file(paste0(type, "_inputs", ".txt"), "w")
   write(paste("* model hash ID", model_hash), file = printer, append = T)
 
@@ -234,7 +236,7 @@ $offdelim
 
   d <- paste0("table ", y[1], "(", sets[1], ",", sets[4], ")
 $ondelim
-$include \"./modules/", module, "/input/", type, "_weights_", 1, ".csv\"
+$include \"./modules/", module, "/input/", hash, "_", type, "_weights_", 1, ".csv\"
 $offdelim
 ;")
   write(d, file = printer, append = T)
@@ -243,7 +245,7 @@ $offdelim
   for (i in 2:length(weights_names)) {
     d <- paste0("table ", y[i], "(", sets[i + 2], ",", sets[i + 3], ")
 $ondelim
-$include \"./modules/", module, "/input/", type, "_weights_", i, ".csv\"
+$include \"./modules/", module, "/input/", hash, "_", type, "_weights_", i, ".csv\"
 $offdelim
 ;")
     write(d, file = printer, append = T)
@@ -253,7 +255,7 @@ $offdelim
     d <- paste0("parameter ", x[i], "(", sets[i + 3], ")
 /
 $ondelim
-$include \"./modules/", module, "/input/", type, "_bias_", i, ".csv\"
+$include \"./modules/", module, "/input/", hash, "_", type, "_bias_", i, ".csv\"
 $offdelim
 /;")
     write(d, file = printer, append = T)
@@ -356,7 +358,7 @@ export2gams <- function(model, module, means, stddevs, inputs_vec, type, model_h
   weights <- get_weights(model)
   names_list <- list_col_names(weights)
   weights_up <- update_weights(inputs_vec, weights, names_list)
-  save_weights(weights_up, type)
+  save_weights(weights_up, type, model_hash)
 
   # exporting gams code
   w_names <- weights_names(weights)
