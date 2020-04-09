@@ -1,6 +1,6 @@
 Package: GSTools
 Title: Grass Tools
-Version: 0.1.4
+Version: 0.1.8
 Authors@R:
     person(given = "Marcos Paulo",
            family = "Pedrosa Alves",

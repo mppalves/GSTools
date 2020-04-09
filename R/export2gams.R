@@ -142,13 +142,13 @@ write_declarations <- function(weights_names, module_number, type, .mean, .std, 
   dzax <- append(dx, dzax)
 
   write("variables", file = printer, append = T)
-  x <- paste0(dx[1], "(j)")
-  x <- append(x, paste0(dx[2], "(j,ln", type, "1)"))
-  x <- append(x, paste0(dx[3], "(j,ln", type, "1)"))
+  x <- paste0(dx[1], "(j)", " LSU variable")
+  x <- append(x, paste0(dx[2], "(j,ln", type, "1)", " LSU input layer"))
+  x <- append(x, paste0(dx[3], "(j,ln", type, "1)", " Environmental input layer"))
 
   for (i in 1:(length(weights_names) - 1)) {
-    x <- append(x, paste0(zx[i], "(j,ln", type, i, ")"))
-    x <- append(x, paste0(ax[i], "(j,ln", type, i, ")"))
+    x <- append(x, paste0(zx[i], "(j,ln", type, i, ")", " layer neurons"))
+    x <- append(x, paste0(ax[i], "(j,ln", type, i, ")", " layer activation"))
   }
   x <- append(x, ";")
   write(x, file = printer, append = T)
@@ -174,17 +174,17 @@ write_declarations <- function(weights_names, module_number, type, .mean, .std, 
   dzay <- append(dy, dzay)
 
   write("equations", file = printer, append = T)
-  y <- paste0(dy[1], "(j,ln", type, "1)")
-  y <- append(y, paste0(dy[2], "(j,ln", type, "1)"))
-  y <- append(y, paste0(dy[3], "(j)"))
-  y <- append(y, paste0(dy[4], "(j)"))
-  y <- append(y, paste0(dy[5], "(j)"))
-  y <- append(y, paste0(dy[6], "(j)"))
+  y <- paste0(dy[1], "(j,ln", type, "1)", " LSU input equation")
+  y <- append(y, paste0(dy[2], "(j,ln", type, "1)", " LSU input equation"))
+  y <- append(y, paste0(dy[3], "(j)", " real lsu equation"))
+  y <- append(y, paste0(dy[4], "(j)", " max LSU"))
+  y <- append(y, paste0(dy[5], "(j)", " min LSU"))
+  y <- append(y, paste0(dy[6], "(j)", " output equation"))
 
 
   for (i in 1:(length(weights_names) - 1)) {
-    y <- append(y, paste0(zy[i], "(j,ln", type, i, ")"))
-    y <- append(y, paste0(ay[i], "(j,ln", type, i, ")"))
+    y <- append(y, paste0(zy[i], "(j,ln", type, i, ")", " layer equation" ))
+    y <- append(y, paste0(ay[i], "(j,ln", type, i, ")", " activation equation"))
   }
   y <- append(y, ";")
   write(y, file = printer, append = T)
@@ -193,8 +193,8 @@ write_declarations <- function(weights_names, module_number, type, .mean, .std, 
   dw <- append(dw, paste0("v", module_number, "_rlsu"))
 
   write("positive variables", file = printer, append = T)
-  w <- paste0(dw[1], "(j)")
-  w <- append(w, paste0(dw[2], "(j)"))
+  w <- paste0(dw[1], "(j)", " output variable")
+  w <- append(w, paste0(dw[2], "(j)", " real LSU variable"))
   w <- append(w, ";")
   write(w, file = printer, append = T)
 
@@ -218,7 +218,7 @@ write_inputs <- function(weights_names, dec, sets, module, type, module_number, 
   printer <- file(paste0(type, "_inputs", ".txt"), "w")
   write(paste("* model hash ID", model_hash), file = printer, append = T)
 
-  w <- paste0("f", module_number, "nn_input")
+  w <- paste0("f", module_number, "_nn_input")
   y <- paste0("f", module_number, "_w", 1)
   x <- paste0("f", module_number, "_b", 1)
   for (i in 2:length(weights_names)) {
@@ -226,7 +226,7 @@ write_inputs <- function(weights_names, dec, sets, module, type, module_number, 
     x <- append(x, paste0("f", module_number, "_b", i))
   }
 
-  d <- paste0("table ", w, "(j,", sets[3], ")
+  d <- paste0("table ", w, "(j,", sets[3], ") aggregated environmental cell values
 $ondelim
 $include \"./modules/", module, "/input/environment_cell.csv\"
 $offdelim
@@ -234,7 +234,7 @@ $offdelim
 
   write(d, file = printer)
 
-  d <- paste0("table ", y[1], "(", sets[1], ",", sets[4], ")
+  d <- paste0("table ", y[1], "(", sets[1], ",", sets[4], ") weight
 $ondelim
 $include \"./modules/", module, "/input/", hash, "_", type, "_weights_", 1, ".csv\"
 $offdelim
@@ -243,7 +243,7 @@ $offdelim
 
 
   for (i in 2:length(weights_names)) {
-    d <- paste0("table ", y[i], "(", sets[i + 2], ",", sets[i + 3], ")
+    d <- paste0("table ", y[i], "(", sets[i + 2], ",", sets[i + 3], ") weight
 $ondelim
 $include \"./modules/", module, "/input/", hash, "_", type, "_weights_", i, ".csv\"
 $offdelim
@@ -252,7 +252,7 @@ $offdelim
   }
 
   for (i in 1:length(weights_names)) {
-    d <- paste0("parameter ", x[i], "(", sets[i + 3], ")
+    d <- paste0("parameter ", x[i], "(", sets[i + 3], ") bias
 /
 $ondelim
 $include \"./modules/", module, "/input/", hash, "_", type, "_bias_", i, ".csv\"
@@ -273,7 +273,7 @@ write_equations <- function(dec, sets, wb, type, model_hash) {
   j <- 5
   for (i in 6:(length(dec[[1]]) - 2)) {
     if (grepl("[z]", dec[[1]][i])) {
-      x <- append(x, paste0(dec[[2]][i + 3], "(j2,", sets[j], ")..  ", dec[[1]][i], "(j2,", sets[j], ") =e= sum(", sets[j - 1], ", ", dec[[1]][i - 1], "(j2,", sets[j - 1], ")", " * ", wb[[2]][j - 3], "(", sets[j - 1], ",", sets[j], ") + ", wb[[3]][j - 3], "(", sets[j], "));"))
+      x <- append(x, paste0(dec[[2]][i + 3], "(j2,", sets[j], ")..  ", dec[[1]][i], "(j2,", sets[j], ") =e= sum(", sets[j - 1], ", ", dec[[1]][i - 1], "(j2,", sets[j - 1], ")", " * ", wb[[2]][j - 3], "(", sets[j - 1], ",", sets[j], ")) + ", wb[[3]][j - 3], "(", sets[j], ");"))
     } else {
       x <- append(x, paste0(dec[[2]][i + 3], "(j2,", sets[j], ")..  ", dec[[1]][i], "(j2,", sets[j], ") =e= log(1 + system.exp(", dec[[1]][i - 1], "(j2,", sets[j], ")));"))
       j <- j + 1
@@ -282,7 +282,7 @@ write_equations <- function(dec, sets, wb, type, model_hash) {
   x <- append(x, paste0(grep("yld", dec[[2]], value = T), "(j2)..  ", dec[[3]][1], "(j2) =e= sum((", sets[length(sets) - 1], ",", sets[length(sets)], "), ", dec[[1]][length(dec[[1]]) - 2], "(j2,", sets[length(sets) - 1], ")", " * ", wb[[2]][length(wb[[3]])], "(", sets[length(sets) - 1], ",", sets[length(sets)], ") + ", wb[[3]][length(wb[[3]])], "(", sets[length(sets)], "));"))
   x <- append(x, paste0(grep("max", dec[[2]], value = T), "(j2)..  ", dec[[1]][1], "(j2) =l= 2;"))
   x <- append(x, paste0(grep("min", dec[[2]], value = T), "(j2)..  ", dec[[1]][1], "(j2) =g= -2;"))
-  x <- append(x, paste0(grep("rlsu", dec[[2]], value = T), "(j2)..  ", dec[[3]][2], "(j2) =g= ", dec[[1]][1], "(j2)", " * ", dec[[4]][1], " + ", dec[[4]][2], ";"))
+  x <- append(x, paste0(grep("rlsu", dec[[2]], value = T), "(j2)..  ", dec[[3]][2], "(j2) =e= ", dec[[1]][1], "(j2)", " * ", dec[[4]][2], " + ", dec[[4]][1], ";"))
 
   printer <- file(paste0(type, "_equations", ".txt"), "w")
   write(paste("* model hash ID", model_hash), file = printer, append = T)
