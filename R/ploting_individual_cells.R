@@ -33,9 +33,9 @@ ploting_individual_cells = function(test_data,cell,Lsu_range, climate_variable, 
     }
   }
 
-  axx = list(title = "lsu")
-  axy = list(title = climate_variable)
-  axz = list(title = "output")
+  # axx = list(title = "lsu")
+  # axy = list(title = climate_variable)
+  # axz = list(title = "output")
 
   p <- plot_ly(y=r, x=x, z = as.matrix(res)) %>% layout(scene = list(xaxis=axx,yaxis=axy,zaxis=axz))  %>% add_surface()
   return(p)
